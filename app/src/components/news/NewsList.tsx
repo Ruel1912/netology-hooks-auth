@@ -25,18 +25,18 @@ const NewsList = () => {
     return <span className="loading loading-spinner loading-lg"></span>
   }
 
-  if (news) {
-    return (
-      <>
-        {error && <ViewError error={error} />}
+  return (
+    <>
+      {error && <ViewError error={error} />}
+      {news && (
         <section className="grid grid-cols-2 gap-x-10 gap-y-5 w-full max-w-5xl">
           {news.map((item: INews) => (
             <NewsItem key={item.id} item={item} />
           ))}
         </section>
-      </>
-    )
-  }
+      )}
+    </>
+  )
 }
 
 export default NewsList
