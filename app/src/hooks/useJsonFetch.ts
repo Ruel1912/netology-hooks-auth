@@ -28,7 +28,9 @@ export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
         if (error instanceof SyntaxError) {
           setError('Response is not valid JSON')
         } else {
-          setError(error.message || 'Network error')
+          if (error instanceof Error) {
+            setError(error.message || 'Network error')
+          }
         }
       } finally {
         setIsLoading(false)
@@ -38,5 +40,5 @@ export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
     fetchData()
   }, [url])
 
-  return {data, isLoading, error}
+  return [data, isLoading, error]
 }

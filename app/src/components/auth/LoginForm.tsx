@@ -57,7 +57,9 @@ const LoginForm = () => {
       if (error instanceof SyntaxError) {
         setError('Response is not valid JSON')
       } else {
-        setError(error.message || 'Network error')
+        if (error instanceof Error) {
+          setError(error.message || 'Network error')
+        }
       }
     }
   }
