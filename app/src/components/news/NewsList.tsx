@@ -10,13 +10,16 @@ const { VITE_BACKEND_URL: backendUrl } = import.meta.env
 const NewsList = () => {
   const { token } = useContext(AuthContext)
 
-  const [news, isLoading, error] = useJsonFetch(`${backendUrl}/private/news`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const [news, isLoading, error] = useJsonFetch(
+    `${backendUrl}/private/news`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
 
   if (isLoading) {
     return <Loading />

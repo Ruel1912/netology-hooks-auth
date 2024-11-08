@@ -17,7 +17,7 @@ function App() {
   )
 
   const [profileData, loadingProfile, errorProfile] = useJsonFetch(
-    token ? `${backendUrl}/private/me` : '',
+    token && !profile ? `${backendUrl}/private/me` : '',
     {
       method: 'GET',
       headers: {
@@ -30,10 +30,8 @@ function App() {
   useEffect(() => {
     if (profileData) {
       const profileString = JSON.stringify(profileData)
-      setProfile(profileString)
       localStorage.setItem('profile', profileString)
-    } else {
-      localStorage.removeItem('profile')
+      setProfile(profileString)
     }
   }, [profileData])
 
@@ -43,6 +41,8 @@ function App() {
     } else {
       localStorage.removeItem('token')
       localStorage.removeItem('profile')
+      setToken(null)
+      setProfile(null)
     }
   }, [token])
 
