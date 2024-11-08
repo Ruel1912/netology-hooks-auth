@@ -6,7 +6,7 @@ import Loading from '../common/Loading'
 const { VITE_BACKEND_URL: backendUrl } = import.meta.env
 
 const LoginForm = () => {
-  const { profile, setToken, setProfile } = useContext(AuthContext)
+  const { profile, setToken } = useContext(AuthContext)
   const [loginData, setLoginData] = useState<Record<
     string,
     FormDataEntryValue
@@ -25,19 +25,6 @@ const LoginForm = () => {
       : undefined
   )
 
-  const [profileData, isLoadingProfile, errorProfile] = useJsonFetch(
-    tokenData ? `${backendUrl}/private/me` : '',
-    tokenData
-      ? {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenData.token}`,
-          },
-        }
-      : undefined
-  )
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget as HTMLFormElement)
@@ -48,20 +35,13 @@ const LoginForm = () => {
   useEffect(() => {
     if (tokenData && tokenData.token) {
       setToken(tokenData.token)
+      localStorage.setItem('token', tokenData.token)
     }
   }, [tokenData, setToken])
 
-  useEffect(() => {
-    if (profileData) {
-      setProfile(JSON.stringify(profileData))
-    }
-  }, [profileData, setProfile])
-
   return (
     <>
-      {(errorToken || errorProfile) && (
-        <ViewError error={errorToken || errorProfile} />
-      )}
+      {errorToken && <ViewError error={errorToken} />}
       <form
         method="POST"
         onSubmit={handleSubmit}
@@ -83,9 +63,7 @@ const LoginForm = () => {
         />
         <button className="btn btn-outline btn-success" type="submit">
           Login
-          {!profile && (isLoadingToken || isLoadingProfile) ? (
-            <Loading />
-          ) : null}
+          {!profile && isLoadingToken ? <Loading /> : null}
         </button>
       </form>
     </>

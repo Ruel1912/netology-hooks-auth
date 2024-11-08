@@ -3,11 +3,10 @@ import AuthContext from '../../contexts/AuthContext'
 
 const Logout = () => {
 
-  const { profile, setToken, setProfile } = useContext(AuthContext)
+  const { profile, setToken } = useContext(AuthContext)
   
   const logout = () => {
     setToken(null)
-    setProfile(null)
   }
 
   const userData = profile ? JSON.parse(profile) : null
