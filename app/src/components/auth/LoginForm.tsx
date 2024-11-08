@@ -1,77 +1,71 @@
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import AuthContext from '../../contexts/AuthContext'
 import ViewError from '../common/ViewError'
+import { useJsonFetch } from '../../hooks/useJsonFetch'
+import Loading from '../common/Loading'
 const { VITE_BACKEND_URL: backendUrl } = import.meta.env
 
 const LoginForm = () => {
-  const { setToken, setProfile } = useContext(AuthContext)
-  const [error, setError] = useState<string | null>(null)
+  const { profile, setToken, setProfile } = useContext(AuthContext)
+  const [loginData, setLoginData] = useState<Record<
+    string,
+    FormDataEntryValue
+  > | null>(null)
 
-  const formRef = useRef<HTMLFormElement>(null)
-  const handleClick = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (formRef.current) {
-      const formData = new FormData(formRef.current)
-      const data = Object.fromEntries(formData.entries())
-      authorization(data)
-    }
-  }
-
-  const getUser = (token: string) => {
-    setError(null)
-    fetch(`${backendUrl}/private/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setProfile(JSON.stringify(data))
-        localStorage.setItem('profile', JSON.stringify(data))
-      })
-      .catch((e) => console.error(e))
-  }
-
-  const authorization = async (data: Record<string, FormDataEntryValue>) => {
-    try {
-      setError(null)
-      const response = await fetch(`${backendUrl}/auth/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        throw new Error((await response.json())?.message || response.statusText)
-      }
-
-      const { token } = await response.json()
-      setToken(token)
-      localStorage.setItem('token', token)
-      getUser(token)
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        setError('Response is not valid JSON')
-      } else {
-        if (error instanceof Error) {
-          setError(error.message || 'Network error')
+  const [tokenData, isLoadingToken, errorToken] = useJsonFetch(
+    loginData ? `${backendUrl}/auth/` : '',
+    loginData
+      ? {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData),
         }
-      }
-    }
+      : undefined
+  )
+
+  const [profileData, isLoadingProfile, errorProfile] = useJsonFetch(
+    tokenData ? `${backendUrl}/private/me` : '',
+    tokenData
+      ? {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenData.token}`,
+          },
+        }
+      : undefined
+  )
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const data = Object.fromEntries(formData.entries())
+    setLoginData(data)
   }
+
+  useEffect(() => {
+    if (tokenData && tokenData.token) {
+      setToken(tokenData.token)
+    }
+  }, [tokenData, setToken])
+
+  useEffect(() => {
+    if (profileData) {
+      setProfile(JSON.stringify(profileData))
+    }
+  }, [profileData, setProfile])
 
   return (
     <>
-      {error && <ViewError error={error} />}
+      {(errorToken || errorProfile) && (
+        <ViewError error={errorToken || errorProfile} />
+      )}
       <form
         method="POST"
-        onSubmit={(e) => handleClick(e)}
+        onSubmit={handleSubmit}
         className="flex gap-4 items-center justify-end w-full"
-        ref={formRef}
       >
         <input
           name="login"
@@ -89,6 +83,9 @@ const LoginForm = () => {
         />
         <button className="btn btn-outline btn-success" type="submit">
           Login
+          {!profile && (isLoadingToken || isLoadingProfile) ? (
+            <Loading />
+          ) : null}
         </button>
       </form>
     </>

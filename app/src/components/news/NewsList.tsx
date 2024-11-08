@@ -4,16 +4,13 @@ import { INews } from '../../interfaces'
 import NewsItem from './NewsItem'
 import { useJsonFetch } from '../../hooks/useJsonFetch'
 import ViewError from '../common/ViewError'
+import Loading from '../common/Loading'
 const { VITE_BACKEND_URL: backendUrl } = import.meta.env
 
 const NewsList = () => {
   const { token } = useContext(AuthContext)
 
-  const {
-    data: news,
-    isLoading,
-    error,
-  } = useJsonFetch(`${backendUrl}/private/news`, {
+  const [news, isLoading, error] = useJsonFetch(`${backendUrl}/private/news`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -22,7 +19,7 @@ const NewsList = () => {
   })
 
   if (isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>
+    return <Loading />
   }
 
   return (

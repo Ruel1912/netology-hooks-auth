@@ -11,19 +11,23 @@ export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
       setError(null)
 
       try {
+        if (!url.length) {
+          return
+        }
+
         const response = await fetch(url, opts)
 
         if (!response.ok) {
-
           if (response.status === 401) {
             throw new Error('Unauthorized')
           }
-          throw new Error((await response.json())?.message || response.statusText)
+          throw new Error(
+            (await response.json())?.message || response.statusText
+          )
         }
 
         const data = await response.json()
         setData(data)
-
       } catch (error) {
         if (error instanceof SyntaxError) {
           setError('Response is not valid JSON')

@@ -6,12 +6,9 @@ const Logout = () => {
   const { profile, setToken, setProfile } = useContext(AuthContext)
   
   const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('profile')
     setToken(null)
     setProfile(null)
   }
-  
 
   const userData = profile ? JSON.parse(profile) : null
 
